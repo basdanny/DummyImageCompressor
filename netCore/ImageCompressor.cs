@@ -1,71 +1,112 @@
 using System;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
 using System.IO;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using System.Linq;
+using SixLabors.Primitives;
 
-namespace cli1
+namespace DummyImageCompressor
 {
-    class ImageCompressor
+  class ImageCompressor
+  {
+
+    #region Constants
+    private const double DefaultImageDimensionWidth = 1920.0;
+    private const double DefaultImageDimensionHeight = 1080.0;
+    #endregion
+
+    public void Compress(string[] args)
     {
+      double targetImageWidth, targetImageHeight;
+      if (GetTargetWidthAndHeight(ref args, out targetImageWidth, out targetImageHeight))
+      {
 
-        #region Constants
-        private const double ImageDimensionWidth = 1920.0;
-        private const double ImageDimensionHeight = 1080.0;
-        #endregion
-        
-        public void Compress(string[] inputFilenames)
+        foreach (string inputFilename in args)
         {
+          using (Image image = Image.Load(inputFilename))
+          {
+            string outputFilename = inputFilename.Insert(inputFilename.LastIndexOf('\\') + 1, "_");
 
-            foreach (string inputFilename in inputFilenames)
-            {                
-                using (Image image = Image.Load(inputFilename))
-                {
-                    string outputFilename = inputFilename.Insert(inputFilename.LastIndexOf('\\') + 1, "_");
+            var outputImageDimensions = GetOutputImageDimensions(image, targetImageWidth, targetImageHeight);
 
-                    var outputImageDimensions = GetOutputImageDimensions(image);
-                    
-                    image.Mutate(x => x
-                       .Resize(outputImageDimensions.Width, outputImageDimensions.Height)                       
-                    );
+            image.Mutate(x => x
+               .Resize(outputImageDimensions.Width, outputImageDimensions.Height)
+            );
 
-                    if (Path.GetExtension(inputFilename).ToLower() == ".jpg")
-                    {
-                        var jpgEncoderOptions = new JpegEncoder();
-                        jpgEncoderOptions.Quality = 90;
-                        image.Save(outputFilename, jpgEncoderOptions);
-                    }
-                    else
-                    {
-                        image.Save(outputFilename);
-                    }
-                    
-                    Console.WriteLine("Picture resized: " + outputFilename);
-                }              
+            if (Path.GetExtension(inputFilename).ToLower() == ".jpg")
+            {
+              var jpgEncoderOptions = new JpegEncoder();
+              jpgEncoderOptions.Quality = 90;
+              image.Save(outputFilename, jpgEncoderOptions);
             }
-        }
+            else
+            {
+              image.Save(outputFilename);
+            }
 
-        private Size GetOutputImageDimensions(Image inputImage)
+            Console.WriteLine("Picture resized: " + outputFilename);
+          }
+        }
+      }
+    }
+
+    private bool GetTargetWidthAndHeight(ref string[] args, out double targetImageWidth, out double targetImageHeight)
+    {
+      targetImageWidth = DefaultImageDimensionWidth;
+      targetImageHeight = DefaultImageDimensionHeight;
+
+      foreach (string argument in args)
+      {
+        string[] splitted = argument.Split('=');
+
+        if (argument.StartsWith("width="))
         {
-            double imageHeight = (double)inputImage.Height;
-            double imageWidth = (double)inputImage.Width;
-            if (imageWidth > ImageDimensionWidth)
-            {
-                double ratio = ImageDimensionWidth / imageWidth;
-                imageWidth = ImageDimensionWidth;
-                imageHeight *= ratio;
-            }
-            if (imageHeight > ImageDimensionHeight)
-            {
-                double ratio = ImageDimensionHeight / imageHeight;
-                imageHeight = ImageDimensionHeight;
-                imageWidth *= ratio;
-            }
-
-            return new Size(Convert.ToInt32(imageWidth), Convert.ToInt32(imageHeight));
+          int result;
+          if (int.TryParse(argument.Split('=')[1], out result))
+            targetImageWidth = (double)result;
+          else
+          {
+            Console.WriteLine("bad \"width\" parameter!");
+            return false;
+          }
         }
-        
+        if (argument.StartsWith("height="))
+        {
+          int result;
+          if (int.TryParse(argument.Split('=')[1], out result))
+            targetImageHeight = (double)result;
+          else
+          {
+            Console.WriteLine("bad \"height\" parameter!");
+            return false;
+          }
+        }
+      }
+      args = args.Where((arg) => !arg.StartsWith("width=") && !arg.StartsWith("height=")).ToArray();
+
+      return true;
+    }
+
+    private Size GetOutputImageDimensions(Image inputImage, double targetImageWidth, double targetImageHeight)
+    {
+      double imageHeight = (double)inputImage.Height;
+      double imageWidth = (double)inputImage.Width;
+      if (imageWidth > targetImageWidth)
+      {
+        double ratio = targetImageWidth / imageWidth;
+        imageWidth = targetImageWidth;
+        imageHeight *= ratio;
+      }
+      if (imageHeight > targetImageHeight)
+      {
+        double ratio = targetImageHeight / imageHeight;
+        imageHeight = targetImageHeight;
+        imageWidth *= ratio;
+      }
+
+      return new Size(Convert.ToInt32(imageWidth), Convert.ToInt32(imageHeight));
 
     }
+  }
 }
