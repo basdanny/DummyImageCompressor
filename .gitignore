@@ -21,3 +21,4 @@ obj/
 [Rr]elease*/
 .vs/
 .vscode/
+*.exe
