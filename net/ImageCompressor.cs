@@ -4,7 +4,6 @@ using SixLabors.ImageSharp.Processing;
 using System.IO;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System.Linq;
-using SixLabors.Primitives;
 
 namespace DummyImageCompressor
 {
@@ -36,8 +35,7 @@ namespace DummyImageCompressor
 
             if (Path.GetExtension(inputFilename).ToLower() == ".jpg")
             {
-              var jpgEncoderOptions = new JpegEncoder();
-              jpgEncoderOptions.Quality = 90;
+              var jpgEncoderOptions = new JpegEncoder { Quality = 90};
               image.Save(outputFilename, jpgEncoderOptions);
             }
             else

@@ -9,14 +9,21 @@ Default image dimensions are 1920x1080 . For custom dimensions size, use the fol
 
 ### .NET Framework
 Build the solution (in VS or MSBuild).
-Drop jpeg files on the "DummyImageCompressor.exe". New compressed files will be placed in the original directory having '_' sign as a prefix.
+
 ##### Prerequisites
-.NET 4.6.x
+.NET 4.8.x
 
 
 
-### .NET Core
-run from terminal 
-`dotnet build`
+### .NET (Core)
+run from terminal:  
+`dotnet build`  
+or for release:  
+`dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:PublishTrimmed=true --self-contained true`
+
 #### Prerequisites
-.NET 5.x
+.NET 8.x
+
+
+## Golang
+Go [here](./go/README.md).
