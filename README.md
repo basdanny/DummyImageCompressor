@@ -17,9 +17,13 @@ Build the solution (in VS or MSBuild).
 
 ### .NET (Core)
 run from terminal:  
-`dotnet build`  
+```powershell
+dotnet build
+```  
 or for release:  
-`dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:PublishTrimmed=true --self-contained true`
+```powershell
+dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained false
+```
 
 #### Prerequisites
 .NET 8.x
